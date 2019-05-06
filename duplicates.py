@@ -3,43 +3,8 @@
 # from utils import Roman
 import pandas as pd
 
-
-"""
-550d
-5d
-5d mark 2
-5d mark 3
-5d mark ii
-5d mark iii
-5d mk 2
-5d mk ii
-5d mk iii
-5d mk3
-5d mk3 raw
-5d mkiii
-5dmk2
-5dmk3
-5dmk3 raw
-5dmkii
-5dmkiii
-5mkiii
-600d
-60d
-6d
-70
-70d
-7d
-camera eos 7d
-cannon 5d mark iii
-cannon 7d
-cano t2i
-
-r3d = red
-
-"""
-
-
 class DataSanitization():
+
     def __init__(self, file_name):
         self.sorted_names_weight = []
         self.renamed = {}
@@ -49,11 +14,37 @@ class DataSanitization():
             Implement solution here
         """
 
+        TYPOS_REPLACE = {r'nkon': 'nikon',
+                         r'cannon': 'canon',
+                         r'cano ': 'canon ',
+                         r'r3d': 'red',
+                         r'canonc': 'canon',
+                         r'canond': 'canon',
+                         r'caonon': 'canon',
+                         r'cine flex': 'cineflex',
+                         r'go pro': 'gopro',
+                         r'gopro(\d.*)': r'gopro \1',
+                         r'hero(\d)': r'hero \1',
+                         }
+
+        INCOMPLETE_REPLACE = {r'^(eos.*)': r'canon \1'}
+
+        ROMAN_NUMBERS_REPLACE = {r'iv': '4',
+                                 r'iii': '3',
+                                 r'ii': '2',
+                                 }
+
         # Read file
         df = pd.read_csv("duplicates.txt", sep="\n", header=None, index_col=None)
 
-        # Normalize camera names, first letter of each word capital
+        # Normalize camera names, all to lowercase
         df = df[0].str.lower()
+
+        df = df.replace(TYPOS_REPLACE, regex=True)
+
+        df = df.replace(INCOMPLETE_REPLACE, regex=True)
+
+        df = df.replace(ROMAN_NUMBERS_REPLACE, regex=True)
 
         # First drop of duplicates
         df = df.drop_duplicates()
@@ -61,5 +52,24 @@ class DataSanitization():
         # Sort
         df = df.sort_values()
 
+        # remove parenthesis
+        df = df.replace(r"\(.*\)", "", regex=True)
+
+        # Replace mk with mark
+        df = df.replace(r"mk", "mark", regex=True)
+
+        # Replace mark with mark with spaces to sparate numbers or other chars
+        df = df.replace(r"mark", " mark ", regex=True)
+
+        # Replace multiple whitespace to only one
+        df = df.replace('\s+', ' ', regex=True)
+
+        # Remove staring and trailing spaces
+        df = df.str.strip()
+
+        # 2nd drop of duplicates
+        df = df.drop_duplicates()
+
+
         # Output temp file
-        df.to_csv("output.txt", index=False)
+        df.to_csv("output2.txt", index=False)
