@@ -17,6 +17,8 @@ class DataSanitization():
             Implement solution here
         """
 
+        # file_name = 'duplicates.txt'
+
         TYPOS_REPLACE = {r'nkon': 'nikon',
                          r'cannon': 'canon',
                          r'cano ': 'canon ',
@@ -24,13 +26,22 @@ class DataSanitization():
                          r'canonc': 'canon',
                          r'canond': 'canon',
                          r'caonon': 'canon',
+                         r'samnsung': 'samsung',
                          r'cine flex': 'cineflex',
                          r'go pro': 'gopro',
-                         r'gopro(\d.*)': r'gopro \1',
-                         r'hero(\d)': r'hero \1',
+                         r'gopro(\d.*)': r'gopro \1',  # split gopro + digit with a whitespace
+                         r'hero(\d)': r'hero \1',  # split hero + digit with a whitespace
                          }
 
-        INCOMPLETE_REPLACE = {r'^(eos.*)': r'canon \1'}
+        INCOMPLETE_REPLACE = {r'^(eos.*)': r'canon \1',
+                              r'^camera eos': 'canon eos',
+                             }
+
+        VARIOUS_REPLACE = {r'raw': '',  # remove 'raw' word, as it's not relevant
+                           r'\(.*\)': '',  # remove parenthesis
+                           r'-': r'', # remove -
+                           r'\"': '', # remove double quotes
+                           }
 
         ROMAN_NUMBERS_REPLACE = {r'iv': '4',
                                  r'iii': '3',
@@ -49,14 +60,10 @@ class DataSanitization():
 
         df = df.replace(ROMAN_NUMBERS_REPLACE, regex=True)
 
+        df = df.replace(VARIOUS_REPLACE, regex=True)
+
         # First drop of duplicates
-        df = df.drop_duplicates()
-
-        # Sort
-        df = df.sort_values()
-
-        # remove parenthesis
-        df = df.replace(r"\(.*\)", "", regex=True)
+        # df = df.drop_duplicates()
 
         # Replace mk with mark
         df = df.replace(r"mk", "mark", regex=True)
@@ -67,15 +74,19 @@ class DataSanitization():
         # Replace multiple whitespace to only one
         df = df.replace('\s+', ' ', regex=True)
 
+        # df = df.replace('r^5d(.*)', 'canon 5d \1', regex=True)
+
         # Remove staring and trailing spaces
         df = df.str.strip()
 
         # 2nd drop of duplicates
         df = df.drop_duplicates()
 
+        # Final sort
+        df = df.sort_values()
 
         # Output temp file
-        #df.to_csv("output2.txt", index=False)
+        df.to_csv("output2.txt", index=False)
 
         # Save result
         self.results = df.tolist()
