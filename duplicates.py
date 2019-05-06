@@ -6,9 +6,12 @@ import pandas as pd
 class DataSanitization():
 
     def __init__(self, file_name):
-        self.sorted_names_weight = []
-        self.renamed = {}
-        self.file_name = file_name 
+
+        # self.sorted_names_weight = []
+        # self.renamed = {}
+
+        self.file_name = file_name
+        self.results = []
 
         """
             Implement solution here
@@ -35,7 +38,7 @@ class DataSanitization():
                                  }
 
         # Read file
-        df = pd.read_csv("duplicates.txt", sep="\n", header=None, index_col=None)
+        df = pd.read_csv(file_name, sep="\n", header=None, index_col=None)
 
         # Normalize camera names, all to lowercase
         df = df[0].str.lower()
@@ -72,4 +75,7 @@ class DataSanitization():
 
 
         # Output temp file
-        df.to_csv("output2.txt", index=False)
+        #df.to_csv("output2.txt", index=False)
+
+        # Save result
+        self.results = df.tolist()
